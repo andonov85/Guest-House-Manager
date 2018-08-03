@@ -1,0 +1,37 @@
+{
+  "name": "guesthousemanager",
+  "version": "1.0.0",
+  "description": "Guest house manager",
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "package-mac": "electron-packager . GHM --overwrite --platform=darwin --arch=x64 --icon=assets/icons/mac/icon.icns --prune=true --out=release-builds",
+    "package-win": "electron-packager . GHM --overwrite --asar=true --platform=win32 --arch=x64 --icon=assets/icons/win/icon.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Guest House Manager\"",
+    "package-linux": "electron-packager . GHM --overwrite --asar=true --platform=linux --arch=x64 --icon=assets/icons/png/icon.png --prune=true --out=release-builds",
+    "create-installer-mac": "electron-installer-dmg ./release-builds/guesthousemanager-darwin-x64/guesthousemanager.app GuestHouseManagerInstaller --out=release-builds --overwrite --icon=assets/icons/mac/Saki-Snowish-Install.icns",
+    "create-installer-win": "node installers/windows/createinstaller.js"
+  },
+  "keywords": [
+    "guesthouse"
+  ],
+  "author": "A A",
+  "license": "ISC",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.1.1",
+    "bootstrap": "^3.3.7",
+    "bootstrap-datepicker": "^1.8.0",
+    "bootstrap-year-calendar": "^1.1.1",
+    "electron": "^2.0.2",
+    "electron-settings": "^3.2.0",
+    "googleapis": "^32.0.0",
+    "jquery": "^3.3.1",
+    "nan": "^2.1.0",
+    "popper.js": "^1.14.3",
+    "sqlite3": "^4.0.1"
+  },
+  "devDependencies": {
+    "electron-installer-dmg": "^1.0.0",
+    "electron-packager": "^12.1.0",
+    "electron-winstaller": "^2.6.4"
+  }
+}

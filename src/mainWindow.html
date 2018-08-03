@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap 3.3.7 CSS -->
+    <link rel="stylesheet" href="..\node_modules\bootstrap\dist\css\bootstrap.min.css">
+    <!-- Date Picker 3 CSS -->
+    <link rel="stylesheet" href="..\node_modules\bootstrap-datepicker\dist\css\bootstrap-datepicker3.min.css">
+    <!-- Year Calendar 1.1.0 CSS -->
+    <link rel="stylesheet" href="..\node_modules\bootstrap-year-calendar\css\bootstrap-year-calendar.min.css">
+    <!-- Font Awesome 5.1.1 -->
+    <link rel="stylesheet" href="..\node_modules\@fortawesome\fontawesome-free\css\all.css">
+    <!-- Boostrap user add-on -->
+    <link rel="stylesheet" href=".\styles\bootstrap-extensions.css">
+    <!-- Google fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Handlee" rel="stylesheet">
+
+    <title>Guest House Manager</title>
+
+</head>
+
+<body>
+    <!-- modalAddRooms -->
+    <div class="modal fade" id="modalAddRooms">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">×</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <i class="fas fa-plus nav" style="color: green"></i>
+                    <h4 class="modal-title" style="display: inline">Въведете номер, име и описание на стаята:</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- <input type="hidden" name="event-name" value=""> -->
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="min-date" class="col-sm-4 control-label">Стая номер:</label>
+                            <div class="col-sm-7">
+                                <input name="room-number" type="text" class="form-control" maxlength="20">
+                            </div>
+                        </div>
+                    </form>
+                    <!-- <input type="hidden" name="event-name" value=""> -->
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="min-date" class="col-sm-4 control-label">Име на стаята:</label>
+                            <div class="col-sm-7">
+                                <input name="room-name" type="text" class="form-control" maxlength="200">
+                            </div>
+                        </div>
+                    </form>
+                    <!-- <input type="hidden" name="event-name" value=""> -->
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="min-date" class="col-sm-4 control-label">Описание:</label>
+                            <div class="col-sm-7">
+                                <input name="room-description" type="text" class="form-control" maxlength="200">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fas fa-times fa-1x"></i> Отмени</button>
+                    <button type="button" class="btn btn-primary" id="saveRooms">
+                        <i class="far fa-save fa-1x"></i> Запази</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End of modalAddRooms -->
+    <!-- modalEditRoom -->
+    <div class="modal fade" id="modalEditRoom">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">×</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <i class="fas fa-pencil-alt fa-1x" style="color:#f2d100"></i>
+                    <h4 class="modal-title" style="display: inline">Редакция на стая:</h4>
+                    <!-- Switch button -->
+                    <button id="safetyFuse" type="button" class="btn btn-sm btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off">
+                        <div class="handle"></div>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- <input type="hidden" name="event-name" value=""> -->
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="min-date" class="col-sm-4 control-label">Стая номер:</label>
+                            <div class="col-sm-7">
+                                <input name="room-number" type="text" class="form-control" maxlength="20">
+                            </div>
+                        </div>
+                    </form>
+                    <!-- <input type="hidden" name="event-name" value=""> -->
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="min-date" class="col-sm-4 control-label">Име на стаята:</label>
+                            <div class="col-sm-7">
+                                <input name="room-name" type="text" class="form-control" maxlength="200">
+                            </div>
+                        </div>
+                    </form>
+                    <!-- <input type="hidden" name="event-name" value=""> -->
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="min-date" class="col-sm-4 control-label">Промяна на описанието:</label>
+                            <div class="col-sm-7">
+                                <input name="room-description" type="text" class="form-control" maxlength="200">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="deleteRoom" type="button" class="btn btn-danger" data-dismiss="modal" style="display: none">
+                        <i class="fas fa-trash-alt fa-1x"></i> Премахни</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fas fa-times fa-1x"></i> Отмени</button>
+                    <button id="editRoom" type="button" class="btn btn-primary">
+                        <i class="fas fa-check fa-1x"></i> Приложи</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End of editRoom -->
+
+    <!-- Top Navbar -->
+
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                    aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" id="brand" href="#">Guest House Nina</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li id="showRooms">
+                        <a href="#">
+                            <i class="fas fa-sitemap nav"></i> Всички стаи</a>
+                    </li>
+                    <li id="addRooms">
+                        <a href="#" data-toggle="modal" data-target="#modalAddRooms">
+                            <i class="fas fa-plus nav"></i> Добави стая</a>
+                    </li>
+                    <li id="hint">
+                        <a href="#">
+                            <i class="far fa-lightbulb fa-lg"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+    <!--End of Top Navbar -->
+    <!-- Body Grid -->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <!-- Side nav -->
+                <ul class="nav nav-pills nav-stacked" role="tablist">
+                    <li role="presentation">
+                        <a id="showFreeRooms" href="#">
+                            <i class="far fa-calendar-alt fa-1x"></i> Свободни стаи</a>
+                    </li>
+                    <li>
+                        <div id="free-rooms" class="input-group input-daterange" data-provide="datepicker">
+                            <input type="text" class="form-control" value="">
+                            <span class="input-group-addon">до</span>
+                            <input type="text" class="form-control" value="">
+                        </div>
+                    </li>
+                    <li role="presentation">
+                        <a href="#">
+                            <i class="fas fa-search fa-1x"></i> Намери гост</a>
+                        <input type="text" class="form-control" value="">
+                    </li>
+                    <li role="presentation">
+                        <a id="trash" href="#">
+                            <i class="fas fa-trash-alt fa-1x"></i> Кошче</a>
+                    </li>
+                </ul>
+                <!-- End of Side nav -->
+            </div>
+            <div class="col-md-9">
+                <div id="main" class="container-fluid">
+                    <div id="rooms-content" class="bs-glyphicons" style="display: none"></div>
+                    <div id="search-content" style="display: none"></div>
+                    <div id="trash-content" style="display: none">
+                        <h4>Премахнати стаи</h4>
+                        <div id="deleted-rooms" class="container-fluid">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Стая</th>
+                                        <th>Име на стаята</th>
+                                        <th>Описание</th>
+                                        <th>Статус</th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <h4>Премахнати резервации</h4>
+                        <div id="deleted-events" class="container-fluid">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Стая</th>
+                                        <th>Име на стаята</th>
+                                        <th>Резервация</th>
+                                        <th>Описание</th>
+                                        <th>Начална дата</th>
+                                        <th>Крайна дата</th>
+                                        <th>Гости</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="navbar navbar-default navbar-fixed-bottom">
+        <a class="weatherwidget-io" href="https://forecast7.com/bg/42d1027d94/ahtopol/" data-label_1="АХТОПОЛ" data-label_2="ВРЕМЕТО"
+            data-font="Arial" data-icons="Climacons Animated" data-theme="clear" data-highcolor="#ff8116" data-suncolor="#ffb600"
+            data-cloudfill="#e5e5e5" data-raincolor="#009fff">АХТОПОЛ ВРЕМЕТО</a>
+    </nav>
+    <!-- End of Body Grid -->
+
+    <script>
+        if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+    </script>
+    <!-- jQuery 3.3.1 -->
+    <script src="..\node_modules\jquery\dist\jquery.min.js"></script>
+    <!-- Popper 1.14.3 -->
+    <script src="..\node_modules\popper.js\dist\umd\popper.min.js"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="..\node_modules\bootstrap\dist\js\bootstrap.min.js"></script>
+    <!-- Date Picker 1.8.0-->
+    <script src="..\node_modules\bootstrap-datepicker\dist\js\bootstrap-datepicker.min.js"></script>
+    <!-- Date Picker Locale BG -->
+    <script src="..\node_modules\bootstrap-datepicker\dist\locales\bootstrap-datepicker.bg.min.js"></script>
+    <!-- Year Calendar -->
+    <script src="..\node_modules\bootstrap-year-calendar\js\bootstrap-year-calendar.js"></script>
+    <!-- Year Calendar Locale BG-->
+    <script src="..\node_modules\bootstrap-year-calendar\js\languages\bootstrap-year-calendar.bg.js"></script>
+    <!-- Font Awesome 5.1.1 -->
+    <script src="..\node_modules\@fortawesome\fontawesome-free\js\all.js"></script>
+    <script>
+        const electron = require('electron');
+        const {
+            ipcRenderer
+        } = electron;
+        const app = require('electron').remote.app;
+        const settings = require('electron').remote.require('electron-settings');
+        const sqlite3 = require('sqlite3').verbose();
+        const path = require('path');
+
+        let dbrooms;
+
+        createRoomsDatabase();
+        helpWidget();
+
+        $('.input-daterange input').each(function () {
+            $(this).datepicker({
+                language: 'bg',
+                weekStart: 1,
+                format: 'dd/mm/yyyy',
+                daysOfWeekHighlighted: '0,6',
+                immediateUpdates: true,
+                autoclose: true
+            });
+        });
+
+        $('#saveRooms').click(() => {
+            const roomNumber = $('#modalAddRooms input[name="room-number"]').val();
+            const roomName = $('#modalAddRooms input[name="room-name"]').val();
+            const roomDescr = $('#modalAddRooms input[name="room-description"]').val();
+            createRoom(roomNumber, roomName, roomDescr);
+
+            $('#modalAddRooms input[name="room-number"]').val('');
+            $('#modalAddRooms input[name="room-name"]').val('');
+            $('#modalAddRooms input[name="room-description"]').val('');
+
+            $('#trash-content').hide();
+            $('#search-content').hide();
+            $('#modalAddRooms').modal('hide');
+        });
+
+        $('#deleteRoom').click(() => {
+            let roomid = $('#modalEditRoom').data('roomid');
+            deleteRoom(roomid);
+            $('#modalEditRoom').modal('hide');
+        });
+
+        $('#showRooms').click(() => {
+            $(`.btn-rooms`).attr('class', 'btn btn-default btn-rooms normal');
+            $('#trash-content').hide();
+            $('#search-content').hide();
+
+            createRoomsPage();
+            $('#rooms-content').toggle(200);
+        });
+
+        $('#editRoom').click(() => {
+            let roomid = $('#modalEditRoom').data('roomid');
+            const roomNumber = $('#modalEditRoom input[name="room-number"]').val();
+            const roomName = $('#modalEditRoom input[name="room-name"]').val();
+            const roomDescr = $('#modalEditRoom input[name="room-description"]').val();
+            const newRoomData = [
+                roomNumber,
+                roomName,
+                roomDescr
+            ];
+
+            editRoom(roomid, newRoomData);
+            $('#modalEditRoom').modal('hide');
+        });
+
+        $('#showFreeRooms').click(function (e) {
+            let dates = [];
+            $('#free-rooms input').each(function (index) {
+                dates.push($(this).datepicker('getDates')[0]);
+            });
+            if (dates[0] === undefined) return;
+
+            showFreeRooms(dates[0], dates[1]);
+
+            $('#trash-content').hide();
+            $('#search-content').hide();
+            $('#rooms-content').show();
+        });
+
+        $('#safetyFuse').click((e) => {
+            $('#deleteRoom').toggle(250);
+        });
+
+        $('#trash').click((e) => {
+            $('#rooms-content').css('display', 'none');
+            $('#search-content').css('display', 'none');
+
+            showTrashedRooms();
+
+            $('#trash-content').toggle(300);
+        });
+
+        function showTrashedRooms() {
+            $('#deleted-rooms tbody tr').remove();
+            $('#deleted-events tbody tr').remove();
+
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let db = new sqlite3.Database(dbPathFile, function () {
+                db.run('PRAGMA foreign_keys=on');
+            });
+
+            db.all(`SELECT * FROM rooms WHERE room_status = 'deactivated'`, (err, data) => {
+                if (err) console.log(err.message);
+                data.forEach((room) => {
+                    let $tr =
+                        $(
+                            `<tr id="rowid-${room.rowid}"><td>${room.room_number}</td><td>${room.room_name}</td>
+                        <td>${room.room_desc}</td><td>премахната</td>
+                        <td><button type="button" class="btn btn-light restore"><i class="fas fa-redo" style="color: green"></i></button></td>
+                        <td><button type="button" class="btn btn-light delete"><i class="fas fa-eraser" style="color: red"></i></button></td></tr>`
+                        );
+
+                    $tr.find('.restore').click((e) => {
+                        overTrashedRooms('restore', room.rowid);
+                        $(`#rowid-${room.rowid}`).remove();
+                    });
+                    $tr.find('.delete').click((e) => {
+                        overTrashedRooms('delete', room.rowid);
+                        $(`#rowid-${room.rowid}`).remove();
+                    });
+                    $('#deleted-rooms tbody').append($tr);
+                });
+            });
+
+            db.all(`SELECT * FROM trashed_events`, (err, data) => {
+                if (err) console.log(err.message);
+                data.forEach((event) => {
+                    let $tr =
+                        $(
+                            `<tr id="event-rowid-${event.rowid}"><td>${event.room_number}</td><td>${event.room_name}</td>
+                        <td>${event.event_name}</td><td>${event.event_desc}</td>
+                        <td>${event.event_start_date}</td><td>${event.event_end_date}</td>
+                        <td>${event.event_persons}</td>
+                        <td><button type="button" class="btn btn-light delete-event"><i class="fas fa-eraser" style="color: red"></i></button></td></tr>`
+                        );
+
+                    $tr.find('.delete-event').click((e) => {
+                        overTrashedEvents('delete', event.rowid);
+                        $(`#event-rowid-${event.rowid}`).remove();
+                    });
+                    $('#deleted-events tbody').append($tr);
+                });
+            });
+            db.close();
+        }
+
+        function createRoomsDatabase() {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let db = new sqlite3.Database(dbPathFile, function () {
+                db.run('PRAGMA foreign_keys=on');
+            });
+
+            let tableRooms =
+                `CREATE TABLE IF NOT EXISTS rooms (
+                            rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+                            room_number text,
+                            room_name text,
+                            room_desc text,
+                            room_status text
+                        );`;
+            let tableEvents =
+                `CREATE TABLE IF NOT EXISTS events (
+                            room_id integer,
+                            event_id integer,
+                            event_name text,
+                            event_desc text,
+                            event_start_date text,
+                            event_end_date text,
+                            event_color text,
+                            PRIMARY KEY (room_id, event_id),
+                            FOREIGN KEY (room_id) REFERENCES rooms (rowid)
+                            ON DELETE CASCADE ON UPDATE CASCADE
+                        );`;
+            let tablePersons =
+                `CREATE TABLE IF NOT EXISTS persons (
+                            room_id integer,
+                            event_id integer,
+                            person_name text,
+                            person_id text,
+                            person_address text,
+                            FOREIGN KEY (room_id, event_id) REFERENCES events (room_id, event_id)
+                            ON DELETE CASCADE ON UPDATE CASCADE
+                        );`;
+            let deletedEvents =
+                `CREATE TABLE IF NOT EXISTS trashed_events (
+                            rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+                            room_number text,
+                            room_name text,
+                            event_name text,
+                            event_desc text,
+                            event_start_date text,
+                            event_end_date text,
+                            event_persons text
+                        );`;
+            db.serialize(() => {
+                db.run(tableRooms);
+                db.run(tableEvents);
+                db.run(tablePersons);
+                db.run(deletedEvents);
+
+                db.all('SELECT * FROM persons', (err, data) => {
+                    if (err) console.log(err.message);
+                    console.log(data);
+                });
+
+                db.all('SELECT * FROM events', (err, data) => {
+                    if (err) console.log(err.message);
+                    console.log(data);
+                });
+
+                db.all('SELECT * FROM trashed_events', (err, data) => {
+                    if (err) console.log(err.message);
+                    console.log(data);
+                });
+                db.all('SELECT * FROM rooms', (err, data) => {
+                    if (err) console.log(err.message);
+                    console.log(data);
+                });
+
+                db.all(`SELECT * FROM rooms WHERE room_status = 'activated' ORDER BY room_number ASC`, (err,
+                    data) => {
+                    if (err) console.log(err.message);
+                    dbrooms = data;
+                    db.close();
+
+                    if (data.length !== 0) {
+                        createRoomsPage();
+                    }
+                });
+            });
+        }
+
+        function deleteRoom(roomid) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+
+            let sql =
+                `UPDATE rooms
+                    SET room_status = 'deactivated'
+                    WHERE rowid = ?`;
+            sqldb.serialize(() => {
+                sqldb.run(sql, [roomid], (err) => {
+                    if (err) console.log(err);
+                });
+                sqldb.all(`SELECT * FROM rooms WHERE room_status = 'activated' ORDER BY room_number ASC`, (
+                    err, data) => {
+                    if (err) console.log(err.message);
+                    dbrooms = data;
+                    createRoomsPage();
+                    $('#rooms-content').toggle(200);
+                });
+            });
+            sqldb.close();
+        }
+
+        function overTrashedRooms(action, roomid) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+
+            if (action === 'restore') {
+                sqldb.serialize(() => {
+                    let sql = `UPDATE rooms SET room_status = 'activated' WHERE rowid = ${roomid}`;
+                    sqldb.run(sql, (err) => {
+                        if (err) console.log(err);
+                    });
+                    sqldb.all(`SELECT * FROM rooms WHERE room_status = 'activated'`, (err, data) => {
+                        if (err) return console.log(err);
+                        dbrooms = data;
+                    });
+                });
+                sqldb.close();
+            } else if (action === 'delete') {
+                sqldb.serialize(() => {
+                    let sql = `DELETE FROM rooms WHERE rowid = ${roomid}`;
+                    sqldb.run(sql, (err) => {
+                        if (err) console.log(err);
+                    });
+                    sqldb.all(`SELECT * FROM rooms WHERE room_status = 'activated'`, (err, data) => {
+                        if (err) return console.log(err);
+                        dbrooms = data;
+                    });
+                });
+                sqldb.close();
+            }
+        }
+
+        function overTrashedEvents(action, eventid) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+            if (action === 'delete') {
+                sqldb.serialize(() => {
+                    let sql = `DELETE FROM trashed_events WHERE rowid = ${eventid}`;
+                    sqldb.run(sql, (err) => {
+                        if (err) console.log(err);
+                    });
+                });
+                sqldb.close();
+            }
+        }
+
+        function createRoom(roomnumber, roomname, roomdesc) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+
+            let sql =
+                `INSERT INTO rooms (
+                        room_number,
+                        room_name,
+                        room_desc,
+                        room_status
+                    ) VALUES (?,?,?,?)`;
+            let data = [roomnumber, roomname, roomdesc, 'activated'];
+            sqldb.serialize(() => {
+                sqldb.run(sql, data, (err) => {
+                    if (err) console.log(err);
+                });
+                sqldb.all(`SELECT * FROM rooms WHERE room_status = 'activated' ORDER BY room_number ASC`, (
+                    err, data) => {
+                    if (err) console.log(err.message);
+                    dbrooms = data;
+                    createRoomsPage();
+                    $('#rooms-content').show();
+                });
+            });
+            sqldb.close();
+        }
+
+        function editRoom(roomid, newData) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+
+            let sql =
+                `UPDATE rooms 
+                    SET room_number = ?,
+                        room_name = ?,
+                        room_desc = ?
+                    WHERE rowid = ${roomid}`;
+            sqldb.serialize(() => {
+                sqldb.run(sql, newData, (err) => {
+                    if (err) console.log(err.message);
+                });
+                sqldb.all(`SELECT * FROM rooms WHERE room_status = 'activated' ORDER BY room_number ASC`, (
+                    err, data) => {
+                    if (err) console.log(err.message);
+                    dbrooms = data;
+                    createRoomsPage();
+                });
+            });
+            sqldb.close();
+        }
+
+        function createRoomsPage() {
+            $('#rooms-content').remove();
+            let $rooms = $('<div id="rooms-content" class="bs-glyphicons" style="display: none"></div>');
+
+            for (let i = 0; i < dbrooms.length; i++) {
+                $rooms.append(
+                    `<button type="button" id="btn-room-${dbrooms[i].rowid}" class="btn btn-default btn-rooms normal" data-toggle="popover" data-roomid="${dbrooms[i].rowid}">
+                    <i class="fas fa-bed"></i><br>Стая ${dbrooms[i].room_number}</button>`
+                );
+            }
+
+            $($rooms).click(function (event) {
+                let roomid;
+
+                if (event.target.nodeName === 'BUTTON') {
+                    roomid = $(event.target).data('roomid');
+                    ipcRenderer.send('room:id', roomid);
+                } else if (event.target.nodeName === 'svg' || event.target.nodeName === 'path') {
+                    roomid = $(event.target).parents('BUTTON').data('roomid');
+                    ipcRenderer.send('room:id', roomid);
+                }
+            });
+
+            $($rooms).mousedown((event) => {
+                let roomid;
+                let number;
+                let name;
+                let description;
+
+                if (event.button === 2 && event.target.nodeName === 'BUTTON') {
+                    roomid = $(event.target).data('roomid');
+                    for (let i in dbrooms) {
+                        if (dbrooms[i].rowid === roomid) {
+                            number = dbrooms[i].room_number;
+                            name = dbrooms[i].room_name;
+                            description = dbrooms[i].room_desc;
+                        }
+                    }
+                    $('#modalEditRoom').data('roomid', roomid);
+                    $('#modalEditRoom input[name="room-number"]').val(number);
+                    $('#modalEditRoom input[name="room-name"]').val(name);
+                    $('#modalEditRoom input[name="room-description"]').val(description);
+                    $('#modalEditRoom').modal('show');
+                } else if (event.button === 2 && event.target.nodeName === 'svg' || event.button ===
+                    2 && event
+                    .target.nodeName === 'path') {
+                    roomid = $(event.target).parents('BUTTON').data('roomid');
+                    for (let i in dbrooms) {
+                        if (dbrooms[i].rowid === roomid) {
+                            number = dbrooms[i].room_number;
+                            name = dbrooms[i].room_name;
+                            description = dbrooms[i].room_desc;
+                        }
+                    }
+                    $('#modalEditRoom').data('roomid', roomid);
+                    $('#modalEditRoom input[name="room-number"]').val(number);
+                    $('#modalEditRoom input[name="room-name"]').val(name);
+                    $('#modalEditRoom input[name="room-description"]').val(description);
+                    $('#modalEditRoom').modal('show');
+                }
+            });
+
+            let $allbuttons = $rooms.find('button');
+            $allbuttons.popover({
+                trigger: "hover",
+                html: true,
+                placement: "auto",
+                content: function () {
+                    let roomid = $(this).data('roomid');
+                    for (let i = 0; i < dbrooms.length; i++) {
+                        if (dbrooms[i].rowid === roomid) {
+                            return `<div>
+                                        <h5 style="color: #159bbd; ">${dbrooms[i].room_name}</h5>
+                                        <p>${dbrooms[i].room_desc}</p>
+                                    </div>`;
+                        }
+                    }
+                }
+            });
+
+            $('#main').append($rooms);
+        }
+
+        function helpWidget() {
+            $('#hint').popover({
+                trigger: "hover",
+                placement: "left",
+                content: 'За редакция, натиснете върху стаята с десния бутон на мишката.'
+            });
+        }
+
+        function showFreeRooms(startDate, endDate) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+
+            let allRooms = [];
+            let reservedRooms = [];
+
+            sqldb.serialize(() => {
+                sqldb.all(`SELECT rowid FROM rooms WHERE room_status = 'activated'`, (err, data) => {
+                    if (err) console.log(err);
+                    data.forEach((room) => {
+                        allRooms.push(room.rowid);
+                    });
+                });
+                sqldb.all(`SELECT * FROM events`, (err, data) => {
+                    if (err) console.log(err);
+
+                    let roomEvents = [];
+                    let isReserved = false;
+
+                    for (let roomNumber of allRooms) {
+                        data.forEach((event) => {
+                            if (roomNumber === event.room_id) {
+                                sdate = new Date(event.event_start_date);
+                                edate = new Date(event.event_end_date);
+                                roomEvents.push({
+                                    date: sdate.getTime(),
+                                    type: 's'
+                                });
+                                roomEvents.push({
+                                    date: edate.getTime(),
+                                    type: 'e'
+                                });
+                            }
+                        });
+
+                        for (let i = 0; i < roomEvents.length; i += 1) {
+                            if (startDate.getTime() === roomEvents[i].date || endDate.getTime() ===
+                                roomEvents[i].date) {
+                                isReserved = true;
+                            }
+                        }
+
+                        roomEvents.push({
+                            date: startDate.getTime(),
+                            type: 's'
+                        });
+                        roomEvents.push({
+                            date: endDate.getTime(),
+                            type: 'e'
+                        });
+
+                        roomEvents.sort((a, b) => {
+                            return a.date - b.date;
+                        });
+
+                        for (let i = 0; i < roomEvents.length - 1; i += 1) {
+                            if (roomEvents[i].type === roomEvents[i + 1].type) {
+                                isReserved = true;
+                            }
+                        }
+
+                        if (isReserved) {
+                            reservedRooms.push(roomNumber);
+                        }
+                        isReserved = false;
+                        roomEvents = [];
+                    }
+                    // ToDo show free rooms in DOM
+                    $(`.btn-rooms`).attr('class', 'btn btn-default btn-rooms normal');
+                    for (let room of allRooms) {
+                        if (reservedRooms.indexOf(room) === -1) {
+                            $(`#btn-room-${room}`).attr('class',
+                                'btn btn-default btn-rooms free');
+                        }
+                    }
+                    for (let room of reservedRooms) {
+                        $(`#btn-room-${room}`).attr('class',
+                            'btn btn-default btn-rooms reserved');
+                    }
+                });
+            });
+            sqldb.close();
+        }
+    </script>
+    <!-- Weather Widget -->
+    <script>
+        ! function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (!d.getElementById(id)) {
+                js = d.createElement(s);
+                js.id = id;
+                js.src = 'https://weatherwidget.io/js/widget.min.js';
+                fjs.parentNode.insertBefore(js, fjs);
+            }
+        }(document, 'script', 'weatherwidget-io-js');
+    </script>
+
+    <script>
+        if (window.module) module = window.module;
+    </script>
+</body>
+
+</html>

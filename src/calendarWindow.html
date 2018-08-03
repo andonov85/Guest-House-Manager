@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap 3.3.7 CSS -->
+    <link rel="stylesheet" href="..\node_modules\bootstrap\dist\css\bootstrap.min.css">
+    <!-- Date Picker 3 CSS -->
+    <link rel="stylesheet" href="..\node_modules\bootstrap-datepicker\dist\css\bootstrap-datepicker3.min.css">
+    <!-- Year Calendar 1.1.0 CSS -->
+    <link rel="stylesheet" href="..\node_modules\bootstrap-year-calendar\css\bootstrap-year-calendar.min.css">
+    <!-- Font Awesome 5.1.1 -->
+    <link rel="stylesheet" href="..\node_modules\@fortawesome\fontawesome-free\css\all.css">
+
+    <title id="window-title"></title>
+</head>
+
+<body>
+    <div id="calendar"></div>
+
+    <script>
+        if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+    </script>
+    <!-- jQuery 3.3.1 -->
+    <script src="..\node_modules\jquery\dist\jquery.min.js"></script>
+    <!-- Popper 1.14.3 -->
+    <script src="..\node_modules\popper.js\dist\umd\popper.min.js"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="..\node_modules\bootstrap\dist\js\bootstrap.min.js"></script>
+    <!-- Date Picker 1.8.0-->
+    <script src="..\node_modules\bootstrap-datepicker\dist\js\bootstrap-datepicker.min.js"></script>
+    <!-- Date Picker Locale BG -->
+    <script src="..\node_modules\bootstrap-datepicker\dist\locales\bootstrap-datepicker.bg.min.js"></script>
+    <!-- Year Calendar -->
+    <script src="..\node_modules\bootstrap-year-calendar\js\bootstrap-year-calendar.js"></script>
+    <!-- Year Calendar Locale BG-->
+    <script src="..\node_modules\bootstrap-year-calendar\js\languages\bootstrap-year-calendar.bg.js"></script>
+    <!-- Font Awesome 5.1.1 -->
+    <script src="..\node_modules\@fortawesome\fontawesome-free\js\all.js"></script>
+    <script>
+        const electron = require('electron');
+        const {
+            ipcRenderer
+        } = electron;
+        const settings = require('electron').remote.require('electron-settings');
+        const app = require('electron').remote.app;
+        const sqlite3 = require('sqlite3').verbose();
+        const path = require('path');
+        const createModal = require('./calendarModal.js').createModal;
+        const createModalPerson = require('./calendarModal.js').createModalPerson;
+
+        let roomDataSource = [];
+
+        ipcRenderer.on('room:id', (e, id) => {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+
+            sqldb.serialize(() => {
+                let persons = {};
+                sqldb.all(`SELECT * FROM persons WHERE room_id = ${id}`, (err, allperson) => {
+                    if (err) console.log(err);
+                    allperson.forEach((person) => {
+                        if (!Array.isArray(persons[person.event_id + ''])) {
+                            persons[person.event_id + ''] = [];
+                        }
+                        persons[person.event_id + ''].push({
+                            name: person.person_name,
+                            personID: person.person_id,
+                            address: person.person_address
+                        });
+                    });
+                });
+                sqldb.all(`SELECT * FROM rooms WHERE rowid = ${id}`, (err, data) => {
+                    if (err) console.log(err);
+                    $('#window-title').text('Стая ' + data[0].room_number + ' / ' + data[0].room_name +
+                        ' / ' + data[0].room_desc).attr({
+                            'data-roomid': id,
+                            'data-roomnumber': data[0].room_number,
+                            'data-roomname': data[0].room_name
+                        });
+                });
+                sqldb.all(`SELECT * FROM events WHERE room_id = ${id}`, (err, events) => {
+                    if (err) console.log(err);
+                    events.forEach((event) => {
+                        roomDataSource.push({
+                            id: event.event_id,
+                            name: event.event_name,
+                            description: event.event_desc,
+                            startDate: new Date(event.event_start_date),
+                            endDate: new Date(event.event_end_date),
+                            color: event.event_color,
+                            persons: persons[event.event_id + ''] || []
+                        });
+                    });
+                    createCalendar();
+                });
+            });
+            sqldb.close();
+        });
+
+        function createCalendar() {
+            createModal();
+
+            $('#calendar').calendar({
+                language: 'bg',
+                allowOverlap: false,
+                enableContextMenu: true,
+                enableRangeSelection: true,
+                contextMenuItems: [{
+                    text: 'Гости',
+                    click: showPersons
+                },
+                {
+                    text: 'Редакция',
+                    click: editEvent
+                },
+                {
+                    text: 'Премахни',
+                    click: confirmDeleteEvent
+                }
+                ],
+                selectRange: function (e) {
+                    editEvent({
+                        startDate: e.startDate,
+                        endDate: e.endDate
+                    });
+                },
+                mouseOnDay: function (e) {
+                    if (e.events.length > 0) {
+                        var content = '';
+
+                        for (var i in e.events) {
+                            content += '<div class="event-tooltip-content">' +
+                                '<div class="event-name" style="color:' + e.events[i].color + '">' + e.events[
+                                    i].name + '</div>' +
+                                '<div class="event-description">' + e.events[i].description + '</div>' +
+                                '</div>';
+                        }
+
+                        $(e.element).popover({
+                            trigger: 'manual',
+                            placement: 'auto',
+                            container: 'body',
+                            html: true,
+                            content: content
+                        });
+
+                        $(e.element).popover('show');
+                    }
+                },
+                mouseOutDay: function (e) {
+                    if (e.events.length > 0) {
+                        $(e.element).popover('hide');
+                    }
+                },
+                dayContextMenu: function (e) {
+                    $(e.element).popover('hide');
+                },
+                dataSource: roomDataSource,
+                renderEnd: () => {
+                    $('.calendar').css("overflow-y", "hidden");
+                    // $('.calendar').css("overflow", "visible");
+                    $('body').css("overflow", "hidden");
+                    $('.input-daterange input').each(function () {
+                        $(this).datepicker({
+                            language: 'bg',
+                            weekStart: 1,
+                            format: 'dd/mm/yyyy',
+                            daysOfWeekHighlighted: '0,6',
+                            immediateUpdates: true,
+                            autoclose: true
+                        });
+                    });
+                }
+            });
+            $('#save-event').click(function () {
+                saveEvent();
+            });
+        }
+
+        function setAppDataSource(event, edit) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+            let roomid = $('#window-title').data('roomid');
+
+            if (edit === 'delete') {
+                sqldb.serialize(() => {
+                    const room_number = $('#window-title').data('roomnumber');
+                    const room_name = $('#window-title').data('roomname');
+                    let event_persons = [];
+
+                    event.persons.forEach((person) => {
+                        event_persons.push(
+                            `Име:${person.name}, ID:${person.personID}, Адрес:${person.address}`
+                        );
+                    });
+                    event_persons = event_persons.join('; ');
+
+                    let dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    let startDate = event.startDate.toLocaleDateString('bg-BG', dateOptions);
+                    let endDate = event.endDate.toLocaleDateString('bg-BG', dateOptions);
+
+                    let sql = `('${room_number}','${room_name}','${event.name}','${event.description}','${startDate}','${endDate}','${event_persons}')`;
+
+                    sqldb.run(`INSERT INTO trashed_events(room_number,
+                            room_name,
+                            event_name,
+                            event_desc,
+                            event_start_date,
+                            event_end_date,
+                            event_persons) VALUES${sql}`, (err) => {
+                        if (err) console.log(err);
+                    });
+                    sqldb.run(`DELETE FROM events WHERE room_id=${roomid} AND event_id=${event.id}`, function (err) {
+                        if (err) console.log(err.message);
+                    });
+                });
+                sqldb.close();
+            } else if (edit === 'update') {
+                let sql =
+                    `event_name='${event.name}', event_desc='${event.description}', event_start_date='${event.startDate}'
+                    , event_end_date='${event.endDate}'`;
+                sqldb.run(`UPDATE events SET ${sql} WHERE room_id=${roomid} AND event_id=${event.id}`, function (err) {
+                    if (err) {
+                        console.log(err.message);
+                    }
+                });
+                sqldb.close();
+            } else { // At 'new' event
+                let sql =
+                    `(${roomid}, ${event.id}, '${event.name}', '${event.description}', '${event.startDate}', '${event.endDate}', '${event.color}')`;
+                sqldb.run(`INSERT INTO events VALUES${sql}`, function (err) {
+                    if (err) {
+                        console.log(err.message);
+                    }
+                });
+                sqldb.close();
+            }
+        }
+
+        function editEvent(event) {
+            if (event.hasOwnProperty('id')) {
+                $('#pencil-event').show();
+            } else {
+                $('#pencil-event').hide();
+            }
+            $('#event-modal input[name="event-index"]').val(event ? event.id : '');
+            $('#event-modal input[name="event-name"]').val(event ? event.name : '');
+            $('#event-modal input[name="event-description"]').val(event ? event.description : '');
+            $('#event-modal input[name="event-start-date"]').datepicker('update', event ? event.startDate : '');
+            $('#event-modal input[name="event-end-date"]').datepicker('update', event ? event.endDate : '');
+            $('#event-modal input[name="event-person"]').val(event.persons ? event.persons.length : '');
+            $('#event-modal').modal();
+        }
+
+        function confirmDeleteEvent(event) {
+            let modalDelete =
+                `<!--Modal: modalConfirmDelete-->
+        <div class="modal fade" id="modalConfirmDelete" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-notify modal-danger" role="document">
+                <!--Content-->
+                <div class="modal-content text-center">
+                    <!--Header-->
+                    <div class="modal-header d-flex justify-content-center">
+                        <h4 class="modal-title" style="display: inline">Премахване?</h4>
+                    </div>
+
+                    <!--Body-->
+                    <div class="modal-body">
+
+                    <i class="fas fa-trash-alt fa-5x"  style="color: #c1094d"></i>
+
+                    </div>
+
+                    <!--Footer-->
+                    <div class="modal-footer flex-center">
+                        <a type="button" class="btn btn-danger waves-effect" id="delete-event" data-dismiss="modal">Да</a>
+                        <a type="button" class="btn btn-outline-danger" data-dismiss="modal">Не</a>
+                    </div>
+                </div>
+                <!--/.Content-->
+            </div>
+        </div>
+        <!--Modal: modalConfirmDelete-->`;
+            $('body').prepend(modalDelete);
+
+            $('#delete-event').click(() => {
+                deleteEvent(event);
+            });
+            $('#modalConfirmDelete').modal('show');
+
+            // Destroys the modal
+            $("#modalConfirmDelete").on('hidden.bs.modal', function () {
+                $(this).data('bs.modal', null);
+            });
+        }
+
+        function deleteEvent(event) {
+            var dataSource = $('#calendar').data('calendar').getDataSource();
+
+            for (var i in dataSource) {
+                if (dataSource[i].id == event.id) {
+                    dataSource.splice(i, 1);
+                    break;
+                }
+            }
+
+            $('#calendar').data('calendar').setDataSource(dataSource);
+            setAppDataSource(event, 'delete');
+        }
+
+        function saveEvent() {
+            var event = {
+                id: $('#event-modal input[name="event-index"]').val(),
+                name: $('#event-modal input[name="event-name"]').val(),
+                description: $('#event-modal input[name="event-description"]').val(),
+                startDate: $('#event-modal input[name="event-start-date"]').datepicker('getDate'),
+                endDate: $('#event-modal input[name="event-end-date"]').datepicker('getDate'),
+                persons: []
+            }
+            var dataSource = $('#calendar').data('calendar').getDataSource();
+            let eventid = Number(event.id);
+            let isEdit = false;
+
+            if (event.id) {
+                isEdit = true;
+                for (var i in dataSource) {
+                    if (dataSource[i].id == event.id) {
+                        dataSource[i].name = event.name;
+                        dataSource[i].description = event.description;
+                        dataSource[i].startDate = event.startDate;
+                        dataSource[i].endDate = event.endDate;
+                    }
+                }
+            } else {
+                var newId = 0;
+                for (var i in dataSource) {
+                    if (dataSource[i].id > newId) {
+                        newId = dataSource[i].id;
+                    }
+                }
+
+                newId++;
+                event.id = newId;
+                eventid = newId;
+
+                dataSource.push(event);
+            }
+
+            $('#calendar').data('calendar').setDataSource(dataSource);
+            $('#event-modal').modal('hide');
+
+            if (isEdit) {
+                setAppDataSource(event, 'update'); // Set the settings file
+            } else {
+                setAppDataSource(event); // Set the settings file
+            }
+
+            // Person id information modal
+            let peoplenum = $('#event-modal input[name="event-person"]').val();
+            if (Number(peoplenum)) {
+                createModalPerson(peoplenum, eventid, isEdit);
+            } else {
+                alert(
+                    `Въвели сте -> "${peoplenum}" <- в полето брой гости! Резервацията остава без промяна броя на гостите. Можете да коригирате това в подменю "Редакция".`
+                );
+            }
+        }
+
+        function showPersons(event) {
+            let infoModal =
+                `<div class="modal fade" id="info-person" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" style="display: block; padding-right: 15px;">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="row">
+                            <div class="col-md-1" style="display: inline-table">
+                                <i class="fas fa-users fa-2x" style="color: #36a8f9"></i>
+                            </div>
+                            <div class="col-md-11" style="display: inline-table">
+                                <h4 class="modal-title" style="display: inline">Информация за гости</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary waves-effect waves-light" data-dismiss="modal">Затвори</button>
+                    </div>
+                    </div>
+                </div>
+            </div>`;
+
+            let info = '<ul class="list-group">';
+            for (let i = 0; i < event.persons.length; i++) {
+                let name = event.persons[i].name;
+                let personID = event.persons[i].personID;
+                let address = event.persons[i].address;
+                if (event.persons[i].personID === '') {
+                    personID = '/няма данни/';
+                }
+                if (event.persons[i].address === '') {
+                    address = '/няма данни/';
+                }
+                info +=
+                    `<li class="list-group-item list-group-item-success" style="font-weight: bold">Име: ${name}</li>
+                <li class="list-group-item list-group-item-warning">ID: ${personID}</li>
+                <li class="list-group-item list-group-item-warning">Адрес: ${address}</li>`
+            }
+            info += `</ul>`;
+            $('body').prepend(infoModal);
+            $('#info-person .modal-body').append(info);
+            $('#info-person').modal('show');
+        }
+    </script>
+    <script>
+        if (window.module) module = window.module;
+    </script>
+</body>
