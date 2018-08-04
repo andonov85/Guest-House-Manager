@@ -2,6 +2,11 @@ body {
   padding-bottom: 70px; 
 }
 
+#reservations li {
+  font-size: 12px;
+  text-align: left;
+}
+
 #brand{
     font-family: 'Handlee', cursive;
     font-size: 24px;

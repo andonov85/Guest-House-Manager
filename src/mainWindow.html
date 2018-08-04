@@ -85,7 +85,8 @@
                     <i class="fas fa-pencil-alt fa-1x" style="color:#f2d100"></i>
                     <h4 class="modal-title" style="display: inline">Редакция на стая:</h4>
                     <!-- Switch button -->
-                    <button id="safetyFuse" type="button" class="btn btn-sm btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off">
+                    <button id="safetyFuse" type="button" class="btn btn-sm btn-toggle" data-toggle="button" aria-pressed="false"
+                        autocomplete="off">
                         <div class="handle"></div>
                     </button>
                 </div>
@@ -146,7 +147,14 @@
                 </button>
                 <a class="navbar-brand" id="brand" href="#">Guest House Nina</a>
             </div>
-
+            <form class="navbar-form navbar-left">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Намери гост...">
+                </div>
+                <button type="submit" class="btn btn-default">
+                    <i class="fas fa-search fa-1x"></i>
+                </button>
+            </form>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
@@ -174,7 +182,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3">
-                <!-- Side Nav -->
+                <!-- Side nav -->
                 <ul class="nav nav-pills nav-stacked" role="tablist">
                     <li role="presentation">
                         <a id="showFreeRooms" href="#">
@@ -187,22 +195,33 @@
                             <input type="text" class="form-control" value="">
                         </div>
                     </li>
-                    <li role="presentation">
-                        <a href="#">
-                            <i class="fas fa-search fa-1x"></i> Намери гост</a>
-                        <input type="text" class="form-control" value="">
+                    <li>
+                        <a href="#reservations" data-toggle="collapse" aria-expanded="false">
+                            <i class="fas fa-edit"></i> Резервации</a>
+                        <ul id="reservations" class="collapse nav nav-pills nav-stacked">
+                            <li>
+                                <a id="showCurrent" href="#">Текущи</a>
+                            </li>
+                            <li>
+                                <a id="showFuture" href="#">Бъдещи</a>
+                            </li>
+                            <li>
+                                <a id="showPast" href="#">Минали</a>
+                            </li>
+                        </ul>
                     </li>
                     <li role="presentation">
                         <a id="trash" href="#">
                             <i class="fas fa-trash-alt fa-1x"></i> Кошче</a>
                     </li>
                 </ul>
-                <!-- End of Side Nav -->
+                <!-- End of Side nav -->
             </div>
             <div class="col-md-9">
                 <div id="main" class="container-fluid">
                     <div id="rooms-content" class="bs-glyphicons" style="display: none"></div>
                     <div id="search-content" style="display: none"></div>
+                    <div id="reservation-content" style="display: none"></div>
                     <div id="trash-content" style="display: none">
                         <h4>Премахнати стаи</h4>
                         <div id="deleted-rooms" class="container-fluid">
@@ -244,9 +263,9 @@
         </div>
     </div>
     <nav class="navbar navbar-default navbar-fixed-bottom">
-        <a class="weatherwidget-io" href="https://forecast7.com/bg/42d1027d94/ahtopol/" data-label_1="АХТОПОЛ" data-label_2="ВРЕМЕТО"
-            data-font="Arial" data-icons="Climacons Animated" data-theme="clear" data-highcolor="#ff8116" data-suncolor="#ffb600"
-            data-cloudfill="#e5e5e5" data-raincolor="#009fff">АХТОПОЛ ВРЕМЕТО</a>
+        <a class="weatherwidget-io" href="https://forecast7.com/bg/42d1027d94/ahtopol/" data-label_1="АХТОПОЛ"
+            data-label_2="ВРЕМЕТО" data-font="Arial" data-icons="Climacons Animated" data-theme="clear" data-highcolor="#ff8116"
+            data-suncolor="#ffb600" data-cloudfill="#e5e5e5" data-raincolor="#009fff">АХТОПОЛ ВРЕМЕТО</a>
     </nav>
     <!-- End of Body Grid -->
 
@@ -392,17 +411,15 @@
 
                     $tr.find('.restore').click((e) => {
                         overTrashedRooms('restore', room.rowid);
-                        $(`#rowid-${room.rowid}`).remove();
                     });
                     $tr.find('.delete').click((e) => {
                         overTrashedRooms('delete', room.rowid);
-                        $(`#rowid-${room.rowid}`).remove();
                     });
                     $('#deleted-rooms tbody').append($tr);
                 });
             });
 
-            db.all(`SELECT * FROM trashed_events`, (err, data) => {
+            db.all(`SELECT rowid, * FROM trashed_events`, (err, data) => {
                 if (err) console.log(err.message);
                 data.forEach((event) => {
                     let $tr =
@@ -416,7 +433,6 @@
 
                     $tr.find('.delete-event').click((e) => {
                         overTrashedEvents('delete', event.rowid);
-                        $(`#event-rowid-${event.rowid}`).remove();
                     });
                     $('#deleted-events tbody').append($tr);
                 });
@@ -545,7 +561,8 @@
                 sqldb.serialize(() => {
                     let sql = `UPDATE rooms SET room_status = 'activated' WHERE rowid = ${roomid}`;
                     sqldb.run(sql, (err) => {
-                        if (err) console.log(err);
+                        if (err) return console.log(err);
+                        $(`#rowid-${roomid}`).remove();
                     });
                     sqldb.all(`SELECT * FROM rooms WHERE room_status = 'activated'`, (err, data) => {
                         if (err) return console.log(err);
@@ -557,7 +574,8 @@
                 sqldb.serialize(() => {
                     let sql = `DELETE FROM rooms WHERE rowid = ${roomid}`;
                     sqldb.run(sql, (err) => {
-                        if (err) console.log(err);
+                        if (err) return console.log(err);
+                        $(`#rowid-${roomid}`).remove();
                     });
                     sqldb.all(`SELECT * FROM rooms WHERE room_status = 'activated'`, (err, data) => {
                         if (err) return console.log(err);
@@ -573,12 +591,12 @@
             let sqldb = new sqlite3.Database(dbPathFile, function () {
                 sqldb.run('PRAGMA foreign_keys=on');
             });
+
             if (action === 'delete') {
-                sqldb.serialize(() => {
-                    let sql = `DELETE FROM trashed_events WHERE rowid = ${eventid}`;
-                    sqldb.run(sql, (err) => {
-                        if (err) console.log(err);
-                    });
+                let sql = `DELETE FROM trashed_events WHERE rowid = ${eventid}`;
+                sqldb.run(sql, (err) => {
+                    if (err) return console.log(err);
+                    $(`#event-rowid-${eventid}`).remove();
                 });
                 sqldb.close();
             }
@@ -684,7 +702,7 @@
                     $('#modalEditRoom').modal('show');
                 } else if (event.button === 2 && event.target.nodeName === 'svg' || event.button ===
                     2 && event
-                    .target.nodeName === 'path') {
+                        .target.nodeName === 'path') {
                     roomid = $(event.target).parents('BUTTON').data('roomid');
                     for (let i in dbrooms) {
                         if (dbrooms[i].rowid === roomid) {
@@ -813,6 +831,74 @@
                             'btn btn-default btn-rooms reserved');
                     }
                 });
+            });
+            sqldb.close();
+        }
+
+        // Todo
+        $('#showCurrent').click(() => {
+            $('#reservation-content').siblings().hide();
+            showReservations('current');
+            $('#reservation-content').show();
+        });
+
+        $('#showFuture').click(() => {
+            $('#reservation-content').siblings().hide();
+            showReservations('future');
+            $('#reservation-content').show();
+        });
+
+        $('#showPast').click(() => {
+            $('#reservation-content').siblings().hide();
+            showReservations('past');
+            $('#reservation-content').show();
+        });
+
+        function showReservations(time) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let sqldb = new sqlite3.Database(dbPathFile, function () {
+                sqldb.run('PRAGMA foreign_keys=on');
+            });
+
+            let today = new Date();
+            let $tr;
+
+            let sql = `SELECT
+	                room_number,
+	                event_name,
+	                event_desc,
+	                event_start_date,
+	                event_end_date,
+	                person_name,
+	                person_id,
+	                person_address
+                FROM events
+                INNER JOIN rooms ON rooms.rowid = events.room_id
+                INNER JOIN persons ON persons.room_id = events.room_id AND persons.event_id = events.event_id
+                WHERE room_status = 'activated';`;
+
+            sqldb.all(sql, (err, data) => {
+                if (err) console.log(err);
+                console.log(data);
+                // let startDate = new Date(event.event_start_date);
+                // let endDate = new Date(event.event_end_date);
+
+                // if (time === 'current') {
+                //     if (today >= startDate && today <= endDate) {
+                //         $tr = $(
+                //             `<tr><td>${event.event_name}</td><td>${event.event_desc}</td>
+                //                 <td>${event.event_start_date}</td><td>${event.event_end_date}</td></tr>`
+                //         );
+                //     }
+                // } else if (time === 'future') {
+                //     if (today < startDate) {
+                //         future.push(event);
+                //     }
+                // } else if (time === 'past') {
+                //     if (today > endDate) {
+                //         past.push(event);
+                //     }
+                // }
             });
             sqldb.close();
         }
