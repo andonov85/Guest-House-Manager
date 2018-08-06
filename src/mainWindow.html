@@ -212,8 +212,21 @@
             <div class="col-md-9">
                 <div id="main" class="container-fluid">
                     <div id="rooms-content" class="bs-glyphicons" style="display: none"></div>
-                    <div id="search-content" style="display: none"></div>
-                    <div id="reservation-content" class="container-fluid" style="display: none">
+                    <div id="search-content" style="display: none">
+                        <h3>Гости</h3>
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>id (рез)</th>
+                                    <th>Име</th>
+                                    <th>ID</th>
+                                    <th>Адрес</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="reservation-content" style="display: none">
                         <h3></h3>
                         <table class="table table-striped table-hover">
                             <thead>
@@ -233,7 +246,7 @@
                     </div>
                     <div id="trash-content" style="display: none">
                         <h3>Премахнати стаи</h3>
-                        <div id="deleted-rooms" class="container-fluid">
+                        <div id="deleted-rooms">
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
@@ -249,7 +262,7 @@
                             </table>
                         </div>
                         <h3>Премахнати резервации</h3>
-                        <div id="deleted-events" class="container-fluid">
+                        <div id="deleted-events">
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
@@ -327,25 +340,11 @@
             $(this).datepicker().datepicker('setDate', new Date());
         });
 
-        $('#search-button').click((e) => {
+        $('#search-button').click((event) => {
             let word = $('#search-input').val();
             search(word);
+            event.preventDefault();
         });
-
-        function search(word) {
-            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
-            let db = new sqlite3.Database(dbPathFile, function () {
-                db.run('PRAGMA foreign_keys=on');
-            });
-
-            let sql = `SELECT *
-                    FROM persons
-                    WHERE person_name LIKE '%${word}%'`;
-            db.all(sql, (err, data) => {
-                if (err) return console.log(err);
-                console.log(data);
-            });
-        }
 
         $('#saveRooms').click(() => {
             const roomNumber = $('#modalAddRooms input[name="room-number"]').val();
@@ -366,12 +365,13 @@
             $('#modalEditRoom').modal('hide');
         });
 
-        $('#showRooms').click(() => {
+        $('#showRooms').click((event) => {
             $(`.btn-rooms`).attr('class', 'btn btn-default btn-rooms normal');
             $('#main').children().hide();
 
             createRoomsPage();
             $('#rooms-content').toggle(350);
+            event.preventDefault();
         });
 
         $('#editRoom').click(() => {
@@ -389,7 +389,7 @@
             $('#modalEditRoom').modal('hide');
         });
 
-        $('#showFreeRooms').click(function (e) {
+        $('#showFreeRooms').click(function (event) {
             let dates = [];
             $('#free-rooms input').each(function (index) {
                 dates.push($(this).datepicker('getDates')[0]);
@@ -401,18 +401,20 @@
             $('#rooms-content').siblings().hide();
             $('#rooms-content').hide();
             $('#rooms-content').toggle(350);
+            event.preventDefault();
         });
 
         $('#safetyFuse').click((e) => {
             $('#deleteRoom').toggle(250);
         });
 
-        $('#trash').click((e) => {
+        $('#trash').click((event) => {
             $('#trash-content').siblings().hide();
 
             showTrashedRooms();
             $('#trash-content').hide();
             $('#trash-content').toggle(300);
+            event.preventDefault();
         });
 
         function showTrashedRooms() {
@@ -520,24 +522,24 @@
                 db.run(tablePersons);
                 db.run(deletedEvents);
 
-                db.all('SELECT * FROM persons', (err, data) => {
-                    if (err) console.log(err.message);
-                    console.log(data);
-                });
+                // db.all('SELECT * FROM persons', (err, data) => {
+                //     if (err) console.log(err.message);
+                //     console.log(data);
+                // });
 
-                db.all('SELECT * FROM events', (err, data) => {
-                    if (err) console.log(err.message);
-                    console.log(data);
-                });
+                // db.all('SELECT * FROM events', (err, data) => {
+                //     if (err) console.log(err.message);
+                //     console.log(data);
+                // });
 
-                db.all('SELECT * FROM trashed_events', (err, data) => {
-                    if (err) console.log(err.message);
-                    console.log(data);
-                });
-                db.all('SELECT * FROM rooms', (err, data) => {
-                    if (err) console.log(err.message);
-                    console.log(data);
-                });
+                // db.all('SELECT * FROM trashed_events', (err, data) => {
+                //     if (err) console.log(err.message);
+                //     console.log(data);
+                // });
+                // db.all('SELECT * FROM rooms', (err, data) => {
+                //     if (err) console.log(err.message);
+                //     console.log(data);
+                // });
 
                 db.all(`SELECT * FROM rooms WHERE room_status = 'activated' ORDER BY room_number ASC`, (err,
                     data) => {
@@ -957,7 +959,7 @@
                             persons.push(person.person_name + ' ' + person.person_id + ' ' +
                                 person.person_address);
                         });
-                        persons.join(' ;  ');
+                        persons = persons.join(' ; ');
 
                         let dateOptions = {
                             weekday: 'long',
@@ -975,7 +977,7 @@
                         if (time === 'current') {
                             if (today >= startDate && today <= endDate || today === startDate) {
                                 $tr = $(
-                                    `<tr class="success"><td>${event.room_id + '' + event.event_id + '.'}</td>
+                                    `<tr class="success"><td>${'#' + event.room_id + '' + event.event_id}</td>
                                     <td>${event.room_number}</td><td>${event.room_name}</td>
                                     <td>${event.event_name}</td><td>${event.event_desc}</td>
                                     <td>${start_date}</td><td>${end_date}</td>
@@ -986,7 +988,7 @@
                         } else if (time === 'future') {
                             if (today < startDate) {
                                 $tr = $(
-                                    `<tr class="warning"><td>${event.room_id + '' + event.event_id + '.'}</td>
+                                    `<tr class="warning"><td>${'#' + event.room_id + '' + event.event_id}</td>
                                     <td>${event.room_number}</td><td>${event.room_name}</td>
                                     <td>${event.event_name}</td><td>${event.event_desc}</td>
                                     <td>${start_date}</td><td>${end_date}</td>
@@ -997,7 +999,7 @@
                         } else if (time === 'past') {
                             if (today > endDate) {
                                 $tr = $(
-                                    `<tr class="info"><td>${event.room_id + '' + event.event_id + '.'}</td>
+                                    `<tr class="info"><td>${'#' + event.room_id + '' + event.event_id}</td>
                                     <td>${event.room_number}</td><td>${event.room_name}</td>
                                     <td>${event.event_name}</td><td>${event.event_desc}</td>
                                     <td>${start_date}</td><td>${end_date}</td>
@@ -1010,6 +1012,35 @@
                 });
             });
             sqldb.close();
+        }
+
+        function search(word) {
+            let dbPathFile = path.join(app.getPath('userData'), 'ghm.db');
+            let db = new sqlite3.Database(dbPathFile, function () {
+                db.run('PRAGMA foreign_keys=on');
+            });
+
+            let sql =
+                `SELECT *
+                    FROM persons
+                    WHERE person_name LIKE '%${word}%'`;
+            db.all(sql, (err, data) => {
+                if (err) return console.log(err);
+
+                $('#search-content tbody tr').remove();
+                let $tr;
+                data.forEach((person) => {
+                    $tr = $(
+                        `<tr class="success"><td>${'#' + person.room_id + '' + person.event_id}</td>
+                        <td>${person.person_name}</td><td>${person.person_id}</td>
+                        <td>${person.person_address}</td></tr>`
+                    );
+                    $('#search-content tbody').append($tr);
+                });
+                $('#search-content').hide();
+                $('#search-content').siblings().hide();
+                $('#search-content').toggle(300);
+            });
         }
     </script>
     <!-- Weather Widget -->
